@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:jms="http://www.springframework.org/schema/jms"
+       xmlns:amq="http://activemq.apache.org/schema/core"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans 
+                           http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://www.springframework.org/schema/context 
+                           http://www.springframework.org/schema/context/spring-context.xsd
+                           http://www.springframework.org/schema/jms 
+                           http://www.springframework.org/schema/jms/spring-jms.xsd
+                           http://activemq.apache.org/schema/core 
+                           http://activemq.apache.org/schema/core/activemq-core.xsd">                            
+	<!--  Embedded ActiveMQ Mqtt Broker Service -->
+    <amq:broker id="broker" useJmx="false" persistent="false">
+        <amq:transportConnectors>
+             <amq:transportConnector uri="mqtt://0.0.0.0:1883" />
+        </amq:transportConnectors>
+    </amq:broker>
+    
+    <!-- JMS ConnectionFactory to use, configuring the embedded broker using XML -->
+    <amq:connectionFactory id="jmsFactory" brokerURL="vm://localhost" />
+    
+    <!--  ActiveMQ Destination Topics-->
+    <amq:topic id="destination_sensor" physicalName="countertrack.jms.topic.sensor"/>
+    <amq:topic id="destination_web" physicalName="countertrack.jms.topic.web"/>
+          
+    <!-- JMS Producer Configuration -->
+    <bean id="jmsProducerConnectionFactory" 
+          class="org.springframework.jms.connection.SingleConnectionFactory"
+          depends-on="broker"
+          p:targetConnectionFactory-ref="jmsFactory" />
+    
+    <!-- Producer template from destination vaadin web sessions -->
+    <bean id="jmsProducerTemplate" class="org.springframework.jms.core.JmsTemplate"
+          p:connectionFactory-ref="jmsProducerConnectionFactory"       
+          p:defaultDestination-ref="destination_web" />    
+    
+    <bean id="sensorMessageListener" class="com.thingtrack.konekti.countertrack.workbench.message.SensorMessageListener" />
+    
+    <!-- Message listener from destination sensor -->
+	<bean id="listenerContainer" class="org.springframework.jms.listener.DefaultMessageListenerContainer">
+      <property name="connectionFactory" ref="jmsFactory" />
+      <property name="destination" ref="destination_sensor" />
+      <property name="messageListener" ref="sensorMessageListener" />
+    </bean>
+        
+	<!-- JMS Consumer Configuration -->
+    <bean id="jmsConsumerConnectionFactory" 
+          class="org.springframework.jms.connection.SingleConnectionFactory"
+          depends-on="broker"
+          p:targetConnectionFactory-ref="jmsFactory" />
+
+</beans>                           
