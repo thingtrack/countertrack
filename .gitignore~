@@ -38,10 +38,8 @@ Thumbs.db
 #Eclipse files
 ##############
 .project
-.cproject
 .classpath
 .settings/
-Debug/
 build.properties
 
 #VAADIN files
