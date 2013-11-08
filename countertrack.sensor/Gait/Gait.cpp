@@ -22,7 +22,7 @@ Gait::Gait(int currentDirection, vector<int>currentSequence) {
 bool Gait::sameGait(Gait lastGait) {
 	bool sameGait = false;
 
-	if (abs(gaitDate - lastGait.getGaitDate() < 500) ) {
+	if (abs(gaitDate - lastGait.getGaitDate()) < 500)  {
 		if (direction == 1 && lastGait.getDirection() == 1 &&
 				sequence[sequence.size()-1] > lastGait.getSequence()[lastGait.getSequence().size() -1]
 				                                                    	) {
