@@ -8,12 +8,19 @@
 #include <iostream>
 #include <stdio.h>
 #include <cstdlib>
+#include <sqlite3.h>
+#include <string.h>
+#include <mosquittopp.h>
 
 using namespace std;
+
+char* Mat::deviceName = "";
 
 Mat::Mat () {
 	zoneReg = ZoneRegister();
 	lastGait = Gait();
+	getDeviceName();
+	publisher = new mqtt_publisher("counterPublisher", "localhost", 1883, "countertrack.jms.topic.sensor");
 }
 
 int Mat::checkActiveZones () {
@@ -225,6 +232,7 @@ bool Mat::checkGait() {
 
 	Gait first;
 	Gait second;
+	time_t currentTime = time(0);
 	// ____________________________________________________________________________________________________//
 
 	// Detección del sentido de la pisada
@@ -232,17 +240,21 @@ bool Mat::checkGait() {
 	if (gaitSequence[gaitSequence.size() - 1] > gaitSequence[0]) {
 		cout << "Individuo entrando" << endl;
 		existsGait = true;
-		first = Gait(1, gaitSequence);
+		first = Gait(1, gaitSequence, currentTime);
 		if(!first.sameGait(lastGait)) {
 			cout << "Send" << endl;
+			insert(1);
+			mqttPublish(1);
 			lastGait = first;
 		}
 	} else {
 		cout << "Individuo saliendo" << endl;
 		existsGait = true;
-		first = Gait(0, gaitSequence);
+		first = Gait(0, gaitSequence, currentTime);
 		if(!first.sameGait(lastGait)) {
 			cout << "Send" << endl;
+			insert(0);
+			mqttPublish(0);
 			lastGait = first;
 		}
 	}
@@ -266,7 +278,7 @@ bool Mat::checkGait() {
 		if (differentZones >= 3) {
 			if (secondaryGait[counter2 - 1] > secondaryGait[0]) {
 				cout << "Segunda pisada entrante" << endl;
-				second = Gait(1, secondaryGait);
+				second = Gait(1, secondaryGait, currentTime);
 				if(!second.sameGait(lastGait)) {
 					cout << "Send" << endl;
 					lastGait = second;
@@ -274,7 +286,7 @@ bool Mat::checkGait() {
 				existsGait = true;
 			} else {
 				cout << "Segunda pisada saliente" << endl;
-				second = Gait(0, secondaryGait);
+				second = Gait(0, secondaryGait, currentTime);
 				if (!second.sameGait(lastGait)) {
 					cout << "Send" << endl;
 					lastGait = second;
@@ -284,6 +296,124 @@ bool Mat::checkGait() {
 		}
 	}
 	zoneReg.reset();
+	cout << "_________________________________________________" << endl;
 	return existsGait;
 }
 
+void Mat::getDeviceName()
+{
+   sqlite3 *db;
+   sqlite3_stmt *stmt;
+   char *zErrMsg = 0;
+   int  rc;
+   char *sql;
+
+   /* Open database */
+   rc = sqlite3_open("/opt/database/countertrack.db", &db);
+   if( rc ){
+      fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));
+      exit(0);
+   }else{
+      fprintf(stdout, "Opened database successfully\n");
+   }
+
+   /* Prepare SQL statement */
+   sql = "SELECT * FROM CONFIGURATION WHERE KEY = 'DEVICE_NAME'";
+   rc = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
+   if( rc != SQLITE_OK ){
+   fprintf(stderr, "SQL error: %s\n", zErrMsg);
+      sqlite3_free(zErrMsg);
+   }else{
+      fprintf(stdout, "Statement prepared correctly\n");
+   }
+
+   const char* devicePointer;
+   while (sqlite3_step(stmt) == SQLITE_ROW) {
+        devicePointer = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2));
+   }
+   sqlite3_finalize(stmt);
+
+   sqlite3_close(db);
+
+   strcpy(device, devicePointer);
+   printf("Device name stored = %s\n", device);
+}
+
+
+int Mat::deviceName_callback(void *NotUsed, int argc, char **argv, char **azColName)
+{
+   Mat::deviceName = argv[2];
+   return 0;
+}
+
+void Mat::insert(int direction)
+{
+   sqlite3 *db;
+   char *zErrMsg = 0;
+   int  rc;
+   char sql[100];
+
+   /* Open database */
+   rc = sqlite3_open("/opt/database/countertrack.db", &db);
+   if( rc ){
+      fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));
+      exit(0);
+   }else{
+      fprintf(stdout, "Opened database successfully\n");
+   }
+
+   /* Create SQL statement */
+   time_t date = time(0);
+   sprintf(sql,
+         "INSERT INTO COUNTER(COUNT_DATE,DEVICE_NAME,WAY) VALUES ('%li000','%s','%i')",
+         date, device, direction);
+   printf("%s\n",sql);
+   /* Execute SQL statement */
+   rc = sqlite3_exec(db, sql, insert_callback, 0, &zErrMsg);
+   if( rc != SQLITE_OK ){
+   fprintf(stderr, "SQL error: %s\n", zErrMsg);
+      sqlite3_free(zErrMsg);
+   }else{
+      fprintf(stdout, "Insertion completed successfully\n");
+   }
+   sqlite3_close(db);
+}
+
+int Mat::insert_callback(void *NotUsed, int argc, char **argv, char **azColName)
+{
+   return 0;
+}
+
+void Mat::mqttPublish(int direction)
+{
+	int rc = 0;
+	time_t date = time(0);
+
+        char data[20];
+        sprintf(data, "%d-%li000", direction, date);
+
+	mosqpp::lib_init();
+
+	// Check connection
+	rc = publisher->loop();
+	if(rc) {
+		publisher->reconnect();
+		printf("Lost connection detected, reconnect\n");
+	}
+
+	rc = publisher->publish(NULL, "countertrack.jms.topic.sensor", strlen(data), data);
+
+        while (publisher->get_published_flag() == 0) {
+                rc = publisher->loop();
+
+                if(rc){
+                        publisher->reconnect();
+                        printf("Lost connection after publishing, reconnect\n");
+                        break;
+                }
+        }
+	// Set published flag to 0
+        publisher->set_published_flag();
+
+        mosqpp::lib_cleanup();
+}

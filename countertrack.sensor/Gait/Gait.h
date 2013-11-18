@@ -16,6 +16,7 @@ class Gait {
 public:
 	Gait();
 	Gait(int currentDirection, vector<int> currentSequence);
+	Gait(int currentDirection, vector<int> currentSequence, time_t currentTime);
 	bool sameGait(Gait lastGait);
 
 	int getDirection() const {
