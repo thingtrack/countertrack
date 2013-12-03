@@ -240,21 +240,21 @@ bool Mat::checkGait() {
 	if (gaitSequence[gaitSequence.size() - 1] > gaitSequence[0]) {
 		cout << "Individuo entrando" << endl;
 		existsGait = true;
-		first = Gait(1, gaitSequence, currentTime);
-		if(!first.sameGait(lastGait)) {
-			cout << "Send" << endl;
-			insert(1);
-			mqttPublish(1);
-			lastGait = first;
-		}
-	} else {
-		cout << "Individuo saliendo" << endl;
-		existsGait = true;
 		first = Gait(0, gaitSequence, currentTime);
 		if(!first.sameGait(lastGait)) {
 			cout << "Send" << endl;
 			insert(0);
 			mqttPublish(0);
+			lastGait = first;
+		}
+	} else {
+		cout << "Individuo saliendo" << endl;
+		existsGait = true;
+		first = Gait(1, gaitSequence, currentTime);
+		if(!first.sameGait(lastGait)) {
+			cout << "Send" << endl;
+			insert(1);
+			mqttPublish(1);
 			lastGait = first;
 		}
 	}
@@ -278,18 +278,22 @@ bool Mat::checkGait() {
 		if (differentZones >= 3) {
 			if (secondaryGait[counter2 - 1] > secondaryGait[0]) {
 				cout << "Segunda pisada entrante" << endl;
-				second = Gait(1, secondaryGait, currentTime);
+				second = Gait(0, secondaryGait, currentTime);
 				if(!second.sameGait(lastGait)) {
 					cout << "Send" << endl;
 					lastGait = second;
+					insert(0);
+					mqttPublish(0);
 				}
 				existsGait = true;
 			} else {
 				cout << "Segunda pisada saliente" << endl;
-				second = Gait(0, secondaryGait, currentTime);
+				second = Gait(1, secondaryGait, currentTime);
 				if (!second.sameGait(lastGait)) {
 					cout << "Send" << endl;
 					lastGait = second;
+					insert(1);
+					mqttPublish(1);
 				}
 				existsGait = true;
 			}
@@ -371,7 +375,7 @@ void Mat::insert(int direction)
    /* Execute SQL statement */
    rc = sqlite3_exec(db, sql, insert_callback, 0, &zErrMsg);
    if( rc != SQLITE_OK ){
-   fprintf(stderr, "SQL error: %s\n", zErrMsg);
+   fprintf(stderr, "SQL error: %i, %s\n", rc, zErrMsg);
       sqlite3_free(zErrMsg);
    }else{
       fprintf(stdout, "Insertion completed successfully\n");
@@ -409,6 +413,7 @@ void Mat::mqttPublish(int direction)
                 if(rc){
                         publisher->reconnect();
                         printf("Lost connection after publishing, reconnect\n");
+			publisher->publish(NULL, "countertrack.jms.topic.sensor", strlen(data), data);
                         break;
                 }
         }

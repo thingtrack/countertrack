@@ -18,7 +18,7 @@ ZoneRegister::ZoneRegister() {
 
 void ZoneRegister::setActiveZone(int activeZone) {
 	time_t now = time(0);
-	if ((now - date) > 200) {
+	if ((now - date) > 1) {
 		activeZones.clear();
 		counter = 0;
 	}
