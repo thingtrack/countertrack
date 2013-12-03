@@ -14,34 +14,36 @@ Gait::Gait() {
 	sequence.push_back(0);
 }
 
-Gait::Gait(int currentDirection, vector<int>currentSequence) {
+Gait::Gait(int currentDirection, vector<int> currentSequence) {
 	direction = currentDirection;
 	sequence = currentSequence;
 	gaitDate = time(0);
 }
 
-Gait::Gait(int currentDirection, vector<int>currentSequence, time_t currentTime) {
-        direction = currentDirection;
-        sequence = currentSequence;
-        gaitDate = currentTime;
+Gait::Gait(int currentDirection, vector<int> currentSequence,
+		time_t currentTime) {
+	direction = currentDirection;
+	sequence = currentSequence;
+	gaitDate = currentTime;
 }
 
 bool Gait::sameGait(Gait lastGait) {
 	bool sameGait = false;
 
-	if (abs(gaitDate - lastGait.getGaitDate()) == 0)  {
+	if (abs(gaitDate - lastGait.getGaitDate()) == 0) {
 		printf("Same time gait\n");
-		if (direction == 0 && lastGait.getDirection() == 0 &&
-				sequence[sequence.size()-1] > lastGait.getSequence()[lastGait.getSequence().size() -1]
-				                                                    	) {
+		if (direction == 0 && lastGait.getDirection() == 0
+				&& sequence[sequence.size() - 1]
+						> lastGait.getSequence()[lastGait.getSequence().size()
+								- 1]) {
 			sameGait = true;
-		} else if  (direction == 1 && lastGait.getDirection() == 1 &&
-				sequence[sequence.size()-1] < lastGait.getSequence()[lastGait.getSequence().size() -1]
-				                                                    	) {
+		} else if (direction == 1 && lastGait.getDirection() == 1
+				&& sequence[sequence.size() - 1]
+						< lastGait.getSequence()[lastGait.getSequence().size()
+								- 1]) {
 			sameGait = true;
 		}
 	}
 	return sameGait;
 }
-
 

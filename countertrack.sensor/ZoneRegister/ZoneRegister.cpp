@@ -34,8 +34,8 @@ void ZoneRegister::reset() {
 
 void ZoneRegister::display() {
 	cout << "Register: " << endl;
-	for (unsigned i=0; i<activeZones.size(); i++)
-	    cout << activeZones[i];
+	for (unsigned i = 0; i < activeZones.size(); i++)
+		cout << activeZones[i];
 	cout << endl;
 }
 

@@ -16,14 +16,15 @@ using namespace std;
 
 char* Mat::deviceName = "";
 
-Mat::Mat () {
+Mat::Mat() {
 	zoneReg = ZoneRegister();
 	lastGait = Gait();
 	getDeviceName();
-	publisher = new mqtt_publisher("counterPublisher", "localhost", 1883, "countertrack.jms.topic.sensor");
+	publisher = new mqtt_publisher("counterPublisher", "localhost", 1883,
+			"countertrack.jms.topic.sensor");
 }
 
-int Mat::checkActiveZones () {
+int Mat::checkActiveZones() {
 
 	int numberOfActiveZones = 0;
 	FILE *zoneHandler = NULL;
@@ -39,9 +40,9 @@ int Mat::checkActiveZones () {
 	const char *zone8File = "/sys/class/gpio/gpio49/value";
 	const char *zone9File = "/sys/class/gpio/gpio15/value";
 
-	char zoneValue [1];
+	char zoneValue[1];
 
-	if ((zoneHandler = fopen(zone0File,"r+")) != NULL) {
+	if ((zoneHandler = fopen(zone0File, "r+")) != NULL) {
 		fread(zoneValue, sizeof(char), 1, zoneHandler);
 		int zone0 = zoneValue[0] - '0';
 		if (zone0 == 0) {
@@ -51,7 +52,7 @@ int Mat::checkActiveZones () {
 		fclose(zoneHandler);
 	}
 
-	if ((zoneHandler = fopen(zone1File,"r+")) != NULL) {
+	if ((zoneHandler = fopen(zone1File, "r+")) != NULL) {
 		fread(zoneValue, sizeof(char), 1, zoneHandler);
 		int zone1 = zoneValue[0] - '0';
 		if (zone1 == 0) {
@@ -61,7 +62,7 @@ int Mat::checkActiveZones () {
 		fclose(zoneHandler);
 	}
 
-	if ((zoneHandler = fopen(zone2File,"r+")) != NULL) {
+	if ((zoneHandler = fopen(zone2File, "r+")) != NULL) {
 		fread(zoneValue, sizeof(char), 1, zoneHandler);
 		int zone2 = zoneValue[0] - '0';
 		if (zone2 == 0) {
@@ -71,7 +72,7 @@ int Mat::checkActiveZones () {
 		fclose(zoneHandler);
 	}
 
-	if ((zoneHandler = fopen(zone3File,"r+")) != NULL) {
+	if ((zoneHandler = fopen(zone3File, "r+")) != NULL) {
 		fread(zoneValue, sizeof(char), 1, zoneHandler);
 		int zone3 = zoneValue[0] - '0';
 		if (zone3 == 0) {
@@ -81,7 +82,7 @@ int Mat::checkActiveZones () {
 		fclose(zoneHandler);
 	}
 
-	if ((zoneHandler = fopen(zone4File,"r+")) != NULL) {
+	if ((zoneHandler = fopen(zone4File, "r+")) != NULL) {
 		fread(zoneValue, sizeof(char), 1, zoneHandler);
 		int zone4 = zoneValue[0] - '0';
 		if (zone4 == 0) {
@@ -91,7 +92,7 @@ int Mat::checkActiveZones () {
 		fclose(zoneHandler);
 	}
 
-	if ((zoneHandler = fopen(zone5File,"r+")) != NULL) {
+	if ((zoneHandler = fopen(zone5File, "r+")) != NULL) {
 		fread(zoneValue, sizeof(char), 1, zoneHandler);
 		int zone5 = zoneValue[0] - '0';
 		if (zone5 == 0) {
@@ -101,7 +102,7 @@ int Mat::checkActiveZones () {
 		fclose(zoneHandler);
 	}
 
-	if ((zoneHandler = fopen(zone6File,"r+")) != NULL) {
+	if ((zoneHandler = fopen(zone6File, "r+")) != NULL) {
 		fread(zoneValue, sizeof(char), 1, zoneHandler);
 		int zone6 = zoneValue[0] - '0';
 		if (zone6 == 0) {
@@ -111,7 +112,7 @@ int Mat::checkActiveZones () {
 		fclose(zoneHandler);
 	}
 
-	if ((zoneHandler = fopen(zone7File,"r+")) != NULL) {
+	if ((zoneHandler = fopen(zone7File, "r+")) != NULL) {
 		fread(zoneValue, sizeof(char), 1, zoneHandler);
 		int zone7 = zoneValue[0] - '0';
 		if (zone7 == 0) {
@@ -121,7 +122,7 @@ int Mat::checkActiveZones () {
 		fclose(zoneHandler);
 	}
 
-	if ((zoneHandler = fopen(zone8File,"r+")) != NULL) {
+	if ((zoneHandler = fopen(zone8File, "r+")) != NULL) {
 		fread(zoneValue, sizeof(char), 1, zoneHandler);
 		int zone8 = zoneValue[0] - '0';
 		if (zone8 == 0) {
@@ -131,7 +132,7 @@ int Mat::checkActiveZones () {
 		fclose(zoneHandler);
 	}
 
-	if ((zoneHandler = fopen(zone9File,"r+")) != NULL) {
+	if ((zoneHandler = fopen(zone9File, "r+")) != NULL) {
 		fread(zoneValue, sizeof(char), 1, zoneHandler);
 		int zone9 = zoneValue[0] - '0';
 		if (zone9 == 0) {
@@ -154,7 +155,7 @@ bool Mat::checkGait() {
 	// Se obtiene la secuencia de activación de hilos
 	vector<int> activeZones = zoneReg.getActivations();
 
-	for(unsigned i=0; i<activeZones.size(); i++) {
+	for (unsigned i = 0; i < activeZones.size(); i++) {
 		cout << activeZones[i];
 	}
 	cout << endl;
@@ -170,7 +171,7 @@ bool Mat::checkGait() {
 	int counter1 = 0;
 	int counter2 = 0;
 	int counterSequence = 0;
-	for (int i=0; i<10; i++) {
+	for (int i = 0; i < 10; i++) {
 		possibleZones[i] = true;
 	}
 
@@ -186,7 +187,7 @@ bool Mat::checkGait() {
 	// Cada vez que se detecta un hilo próximo al hilo de referencia se almacena como
 	// parte de la pisada principal
 
-	for (unsigned i=1; i<activeZones.size(); i++) {
+	for (unsigned i = 1; i < activeZones.size(); i++) {
 		if ((abs(activeZones[i] - referenceZone) <= 2
 				&& abs(activeZones[i] - activeZones[0]) <= 3)
 				|| !possibleZones[activeZones[i]]) {
@@ -204,7 +205,6 @@ bool Mat::checkGait() {
 		}
 	}
 
-
 	// Se determina cuantas zonas activas hay
 
 	int differentZones = gaitSequence.size();
@@ -214,18 +214,18 @@ bool Mat::checkGait() {
 	// Si hay menos de 3 zonas activas en la pisada principal puede que no se haya producido una pisada
 	// o que se haya producido partida (pisada con la puntera al inicio y con el talón al final)
 	if (differentZones < 3) {
-		gaitSequence.push_back(activeZones[activeZones.size() -1]);
+		gaitSequence.push_back(activeZones[activeZones.size() - 1]);
 		counter2 = 0;
 		counterSequence++;
 		//possibleDoubleHalfGait = true;
 	}
 
-	for (unsigned i=0; i<gaitSequence.size(); i++) {
+	for (unsigned i = 0; i < gaitSequence.size(); i++) {
 		cout << gaitSequence[i];
 	}
 	cout << endl;
 
-	for (unsigned i=0; i<secondaryGait.size(); i++) {
+	for (unsigned i = 0; i < secondaryGait.size(); i++) {
 		cout << secondaryGait[i];
 	}
 	cout << endl;
@@ -241,7 +241,7 @@ bool Mat::checkGait() {
 		cout << "Individuo entrando" << endl;
 		existsGait = true;
 		first = Gait(0, gaitSequence, currentTime);
-		if(!first.sameGait(lastGait)) {
+		if (!first.sameGait(lastGait)) {
 			cout << "Send" << endl;
 			insert(0);
 			mqttPublish(0);
@@ -251,7 +251,7 @@ bool Mat::checkGait() {
 		cout << "Individuo saliendo" << endl;
 		existsGait = true;
 		first = Gait(1, gaitSequence, currentTime);
-		if(!first.sameGait(lastGait)) {
+		if (!first.sameGait(lastGait)) {
 			cout << "Send" << endl;
 			insert(1);
 			mqttPublish(1);
@@ -263,11 +263,10 @@ bool Mat::checkGait() {
 
 	// Para que haya dos pisadas deben haberse activado 3 o más hilos distintos aparte de los de la pisada principal
 
-
 	if (counter2 > 3) {
 		differentZones = 0;
-		for (int i=0; i<10; i++) {
-			for (int j=0; j<counter2; j++) {
+		for (int i = 0; i < 10; i++) {
+			for (int j = 0; j < counter2; j++) {
 				if (secondaryGait[j] == i) {
 					differentZones++;
 					break;
@@ -279,7 +278,7 @@ bool Mat::checkGait() {
 			if (secondaryGait[counter2 - 1] > secondaryGait[0]) {
 				cout << "Segunda pisada entrante" << endl;
 				second = Gait(0, secondaryGait, currentTime);
-				if(!second.sameGait(lastGait)) {
+				if (!second.sameGait(lastGait)) {
 					cout << "Send" << endl;
 					lastGait = second;
 					insert(0);
@@ -304,121 +303,120 @@ bool Mat::checkGait() {
 	return existsGait;
 }
 
-void Mat::getDeviceName()
-{
-   sqlite3 *db;
-   sqlite3_stmt *stmt;
-   char *zErrMsg = 0;
-   int  rc;
-   char *sql;
+void Mat::getDeviceName() {
+	sqlite3 *db;
+	sqlite3_stmt *stmt;
+	char *zErrMsg = 0;
+	int rc;
+	char *sql;
 
-   /* Open database */
-   rc = sqlite3_open("/opt/database/countertrack.db", &db);
-   if( rc ){
-      fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));
-      exit(0);
-   }else{
-      fprintf(stdout, "Opened database successfully\n");
-   }
+	/* Open database */
+	rc = sqlite3_open("/opt/database/countertrack.db", &db);
+	if (rc) {
+		fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));
+		exit(0);
+	} else {
+		fprintf(stdout, "Opened database successfully\n");
+	}
 
-   /* Prepare SQL statement */
-   sql = "SELECT * FROM CONFIGURATION WHERE KEY = 'DEVICE_NAME'";
-   rc = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
-   if( rc != SQLITE_OK ){
-   fprintf(stderr, "SQL error: %s\n", zErrMsg);
-      sqlite3_free(zErrMsg);
-   }else{
-      fprintf(stdout, "Statement prepared correctly\n");
-   }
+	/* Prepare SQL statement */
+	sql = "SELECT * FROM CONFIGURATION WHERE KEY = 'DEVICE_NAME'";
+	rc = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
+	if (rc != SQLITE_OK) {
+		fprintf(stderr, "SQL error: %s\n", zErrMsg);
+		sqlite3_free(zErrMsg);
+	} else {
+		fprintf(stdout, "Statement prepared correctly\n");
+	}
 
-   const char* devicePointer;
-   while (sqlite3_step(stmt) == SQLITE_ROW) {
-        devicePointer = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2));
-   }
-   sqlite3_finalize(stmt);
+	const char* devicePointer;
+	while (sqlite3_step(stmt) == SQLITE_ROW) {
+		devicePointer = reinterpret_cast<const char*>(sqlite3_column_text(stmt,
+				2));
+	}
+	sqlite3_finalize(stmt);
 
-   sqlite3_close(db);
+	sqlite3_close(db);
 
-   strcpy(device, devicePointer);
-   printf("Device name stored = %s\n", device);
+	strcpy(device, devicePointer);
+	printf("Device name stored = %s\n", device);
 }
 
-
-int Mat::deviceName_callback(void *NotUsed, int argc, char **argv, char **azColName)
-{
-   Mat::deviceName = argv[2];
-   return 0;
+int Mat::deviceName_callback(void *NotUsed, int argc, char **argv,
+		char **azColName) {
+	Mat::deviceName = argv[2];
+	return 0;
 }
 
-void Mat::insert(int direction)
-{
-   sqlite3 *db;
-   char *zErrMsg = 0;
-   int  rc;
-   char sql[100];
+void Mat::insert(int direction) {
+	sqlite3 *db;
+	char *zErrMsg = 0;
+	int rc;
+	char sql[100];
 
-   /* Open database */
-   rc = sqlite3_open("/opt/database/countertrack.db", &db);
-   if( rc ){
-      fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));
-      exit(0);
-   }else{
-      fprintf(stdout, "Opened database successfully\n");
-   }
+	/* Open database */
+	rc = sqlite3_open("/opt/database/countertrack.db", &db);
+	if (rc) {
+		fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));
+		exit(0);
+	} else {
+		fprintf(stdout, "Opened database successfully\n");
+	}
 
-   /* Create SQL statement */
-   time_t date = time(0);
-   sprintf(sql,
-         "INSERT INTO COUNTER(COUNT_DATE,DEVICE_NAME,WAY) VALUES ('%li000','%s','%i')",
-         date, device, direction);
-   printf("%s\n",sql);
-   /* Execute SQL statement */
-   rc = sqlite3_exec(db, sql, insert_callback, 0, &zErrMsg);
-   if( rc != SQLITE_OK ){
-   fprintf(stderr, "SQL error: %i, %s\n", rc, zErrMsg);
-      sqlite3_free(zErrMsg);
-   }else{
-      fprintf(stdout, "Insertion completed successfully\n");
-   }
-   sqlite3_close(db);
+	/* Create SQL statement */
+	time_t date = time(0);
+	sprintf(sql,
+			"INSERT INTO COUNTER(COUNT_DATE,DEVICE_NAME,WAY) VALUES ('%li000','%s','%i')",
+			date, device, direction);
+	printf("%s\n", sql);
+	/* Execute SQL statement */
+	rc = sqlite3_exec(db, sql, insert_callback, 0, &zErrMsg);
+	if (rc != SQLITE_OK) {
+		fprintf(stderr, "SQL error: %i, %s\n", rc, zErrMsg);
+		sqlite3_free(zErrMsg);
+	} else {
+		fprintf(stdout, "Insertion completed successfully\n");
+	}
+	sqlite3_close(db);
 }
 
-int Mat::insert_callback(void *NotUsed, int argc, char **argv, char **azColName)
-{
-   return 0;
+int Mat::insert_callback(void *NotUsed, int argc, char **argv,
+		char **azColName) {
+	return 0;
 }
 
-void Mat::mqttPublish(int direction)
-{
+void Mat::mqttPublish(int direction) {
 	int rc = 0;
 	time_t date = time(0);
 
-        char data[20];
-        sprintf(data, "%d-%li000", direction, date);
+	char data[20];
+	sprintf(data, "%d-%li000", direction, date);
 
 	mosqpp::lib_init();
 
 	// Check connection
 	rc = publisher->loop();
-	if(rc) {
+	if (rc) {
 		publisher->reconnect();
 		printf("Lost connection detected, reconnect\n");
 	}
 
-	rc = publisher->publish(NULL, "countertrack.jms.topic.sensor", strlen(data), data);
+	rc = publisher->publish(NULL, "countertrack.jms.topic.sensor", strlen(data),
+			data);
 
-        while (publisher->get_published_flag() == 0) {
-                rc = publisher->loop();
+	while (publisher->get_published_flag() == 0) {
+		rc = publisher->loop();
 
-                if(rc){
-                        publisher->reconnect();
-                        printf("Lost connection after publishing, reconnect\n");
-			publisher->publish(NULL, "countertrack.jms.topic.sensor", strlen(data), data);
-                        break;
-                }
-        }
+		if (rc) {
+			publisher->reconnect();
+			printf("Lost connection after publishing, reconnect\n");
+			publisher->publish(NULL, "countertrack.jms.topic.sensor",
+					strlen(data), data);
+			break;
+		}
+	}
 	// Set published flag to 0
-        publisher->set_published_flag();
+	publisher->set_published_flag();
 
-        mosqpp::lib_cleanup();
+	mosqpp::lib_cleanup();
 }
