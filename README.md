@@ -36,6 +36,7 @@ Directory Structure
 	  |-countertrack.domain/
 	  |-countertrack.service.api/
 	  |-countertrack.service.impl/
+	  |-countertrack.sensor/
 	  |-countertrack.konekti.workbench/
 	  |-license ....... the License file
 	  |-pom.xml ....... project object model
