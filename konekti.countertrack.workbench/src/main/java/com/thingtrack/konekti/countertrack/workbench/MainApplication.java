@@ -116,7 +116,7 @@ public class MainApplication extends SpringContextApplication implements Paramet
 		Locale zhLocale = new Locale("zh");
 		
 		i18n = new ResourceBundleI18N("com/thingtrack/konekti/countertrack/workbench/i18n/messages", esLocale, enLocale, zhLocale);
-		i18n.setCurrentLocale(esLocale);
+		i18n.setCurrentLocale(zhLocale);
 		
 	    window = new MainWindow("Konekti CounterTrack Workbench", i18n);
 	    setMainWindow(window);
